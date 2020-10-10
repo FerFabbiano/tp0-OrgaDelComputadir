@@ -44,28 +44,28 @@ int leerArchivo(char *fileName){
 #define O_OPTION 'o'
 #define I_OPTION 'i'
 
-#define HELP_MESSAGE "help\n" 
-#define INVALID_MESSAGE "Opción inválida\n" 
+#define HELP_MESSAGE "help\n"
+#define INVALID_MESSAGE "Opción inválida\n"
 
 int main(int argc, char **argv){
   int c;
-
+  int version_flag = 0;
   while (1) {
     int option_index = 0;
     static struct option long_options[] = {
-      {"version", no_argument, 0, 'v'},
+      {"version", no_argument,0, 'V'},
       {"help", no_argument, 0, 0},
       {"input", required_argument, 0, 0},
       {"output", required_argument, 0, 0},
     };
 
-    c = getopt_long(argc, argv, "vhi:o:", long_options, &option_index);
+    c = getopt_long(argc, argv, "Vhi:o:", long_options, &option_index);
     if (c == -1)
       break;
 
     switch (c) {
       case V_OPTION:
-        printf("version");
+        printf("version\n");
         break;
 
       case H_OPTION:
