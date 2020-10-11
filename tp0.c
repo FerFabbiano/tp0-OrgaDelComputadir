@@ -11,7 +11,10 @@
 #define I_OPTION 'i'
 #define D_OPTION 'd'
 
-#define HELP_MESSAGE "Options:\n-V, --version   Print version and quit.\n-h, --help   Print this information.\n-o, --output   Path to output file.\n-i, --input   Path to input file.\n-d, --decode   Decode a base64-encoded file.\n"
+#define HELP_MESSAGE "Options:\n-V, --version   Print version and quit.\n-h, --help   \
+                      Print this information.\n-o, --output   Path to output file.\n-i, \
+                      --input   Path to input file.\n-d, --decode   Decode a base64-encoded \
+                      file.\n"
 #define INVALID_MESSAGE "Invalid option , use -h or --help to list valid commands\n"
 
 typedef char* (*callback)(const char *, size_t);
@@ -27,7 +30,6 @@ int modifyFileBase(char* inputFileName,char* outputFileName, callback f) {
     char *line, *output = NULL;
     FILE *infd = fopen(inputFileName, "r");
     FILE *outfd = fopen(outputFileName, "w");
-    //if (!fd) return EXIT_FAILURE;
 
     ssize_t nread = 0;
     size_t len = 0;
@@ -75,12 +77,10 @@ int main(int argc, char **argv){
 
       case I_OPTION:
         memcpy(inputFileName,optarg,strlen(optarg));
-        //printf("option i with value '%s'\n", optarg);
         break;
 
       case O_OPTION:
         memcpy(outputFileName,optarg,strlen(optarg));
-        //printf("option o with value '%s'\n", optarg);
         break;
 
       case D_OPTION:
