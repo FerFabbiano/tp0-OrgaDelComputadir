@@ -3,15 +3,14 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdint.h>
-#include <string.h>
 
+#define EXIT_FAILURE 1
+#define SUCCESS 0
 #define OPT_ENCODE 0
 #define OPT_DECODE 1
 
-char* encodeBase64(char *data, size_t len_input);
-int modifyFileBase(char *fileName, int opt);
-char *decodeBase64(const char *data, size_t lenInput, ssize_t *lenOutput);
-void buildDecodingTable();
+//int modifyFileBase(char *fileName, int opt);
+char* encodeBase64(const char *data, size_t lenInput/*,ssize_t *lenOutput*/);
+char* decodeBase64(const char *data, size_t lenInput/*, ssize_t *lenOutput*/);
 
 #endif

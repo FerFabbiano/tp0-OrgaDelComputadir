@@ -14,8 +14,41 @@
 #define HELP_MESSAGE "help\n"
 #define INVALID_MESSAGE "Opción inválida\n"
 
+typedef char* (*callback)(const char *, size_t);
+
+
+static int __write(FILE* file, char* data, ssize_t lenData) {
+	if(!file || !data) return EXIT_FAILURE;
+	fwrite(data,sizeof(char),lenData,file);
+	return SUCCESS;
+}
+
+int modifyFileBase(char* inputFileName,char* outputFileName, callback f) {
+    char *line, *output = NULL;
+    FILE *infd = fopen(inputFileName, "r");
+    FILE *outfd = fopen(outputFileName, "w");
+    //if (!fd) return EXIT_FAILURE;
+
+    ssize_t nread = 0;
+    size_t len = 0;
+    
+    while ((nread = getline(&line, &len, infd)) != -1){
+        output = f(line, nread);
+        __write(outfd,output,strlen(output));
+        free(output);
+        free(line);
+    }
+    
+    fclose(infd);
+    fclose(outfd);
+    return SUCCESS;
+}
+
 int main(int argc, char **argv){
   int c;
+  callback func = encodeBase64;
+  char inputFileName[256];
+  char outputFileName[256];
 
   while (1) {
     int option_index = 0;
@@ -41,16 +74,18 @@ int main(int argc, char **argv){
         break;
 
       case I_OPTION:
-        modifyFileBase(optarg, OPT_ENCODE);
-        printf("option i with value '%s'\n", optarg);
+        memcpy(inputFileName,optarg,strlen(optarg));
+        //printf("option i with value '%s'\n", optarg);
         break;
 
       case O_OPTION:
-        printf("option o with value '%s'\n", optarg);
+        memcpy(outputFileName,optarg,strlen(optarg));
+        //printf("option o with value '%s'\n", optarg);
         break;
 
       case D_OPTION:
-        modifyFileBase(optarg, OPT_DECODE);
+        func = decodeBase64;
+        //modifyFileBase(optarg, decodeBase64);
         printf("option i with value '%s'\n", optarg);
         break;
 
@@ -58,6 +93,8 @@ int main(int argc, char **argv){
         printf(INVALID_MESSAGE);
       }
   }
+
+  modifyFileBase(inputFileName,outputFileName,func);
 
   exit(EXIT_SUCCESS);
 }
