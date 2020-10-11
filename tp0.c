@@ -2,11 +2,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
-
-extern size_t mystrlen(const char *);
-
-#include <stdio.h>     /* for printf */
-#include <stdlib.h>    /* for exit */
 #include <getopt.h>
 #include "utils.h"
 
@@ -14,6 +9,7 @@ extern size_t mystrlen(const char *);
 #define H_OPTION 'h'
 #define O_OPTION 'o'
 #define I_OPTION 'i'
+#define D_OPTION 'd'
 
 #define HELP_MESSAGE "help\n"
 #define INVALID_MESSAGE "Opción inválida\n"
@@ -28,9 +24,10 @@ int main(int argc, char **argv){
       {"help", no_argument, 0, 0},
       {"input", required_argument, 0, 0},
       {"output", required_argument, 0, 0},
+      {"decode", required_argument, 0, 0}
     };
 
-    c = getopt_long(argc, argv, "Vhi:o:", long_options, &option_index);
+    c = getopt_long(argc, argv, "Vhi:o:d:", long_options, &option_index);
     if (c == -1)
       break;
 
@@ -44,12 +41,17 @@ int main(int argc, char **argv){
         break;
 
       case I_OPTION:
-        leerArchivo(optarg);
+        modifyFileBase(optarg, OPT_ENCODE);
         printf("option i with value '%s'\n", optarg);
         break;
 
       case O_OPTION:
         printf("option o with value '%s'\n", optarg);
+        break;
+
+      case D_OPTION:
+        modifyFileBase(optarg, OPT_DECODE);
+        printf("option i with value '%s'\n", optarg);
         break;
 
       default:
