@@ -11,8 +11,8 @@
 #define I_OPTION 'i'
 #define D_OPTION 'd'
 
-#define HELP_MESSAGE "help\n"
-#define INVALID_MESSAGE "Opción inválida\n"
+#define HELP_MESSAGE "Options:\n-V, --version   Print version and quit.\n-h, --help   Print this information.\n-o, --output   Path to output file.\n-i, --input   Path to input file.\n-d, --decode   Decode a base64-encoded file.\n"
+#define INVALID_MESSAGE "Invalid option , use -h or --help to list valid commands\n"
 
 typedef char* (*callback)(const char *, size_t);
 
@@ -54,19 +54,19 @@ int main(int argc, char **argv){
     int option_index = 0;
     static struct option long_options[] = {
       {"version", no_argument,0, 'V'},
-      {"help", no_argument, 0, 0},
-      {"input", required_argument, 0, 0},
-      {"output", required_argument, 0, 0},
-      {"decode", required_argument, 0, 0}
+      {"help", no_argument, 0, 'h'},
+      {"input", required_argument, 0, 'i'},
+      {"output", required_argument, 0, 'o'},
+      {"decode", no_argument, 0, 'd'}
     };
 
-    c = getopt_long(argc, argv, "Vhi:o:d:", long_options, &option_index);
+    c = getopt_long(argc, argv, "Vhdi:o:", long_options, &option_index);
     if (c == -1)
       break;
 
     switch (c) {
       case V_OPTION:
-        printf("version\n");
+        printf("Version: 1.0.0\n");
         break;
 
       case H_OPTION:
@@ -85,8 +85,6 @@ int main(int argc, char **argv){
 
       case D_OPTION:
         func = decodeBase64;
-        //modifyFileBase(optarg, decodeBase64);
-        printf("option i with value '%s'\n", optarg);
         break;
 
       default:
