@@ -14,8 +14,6 @@
 #define I_OPTION 'i'
 #define D_OPTION 'd'
 
-#define NUEVA_LINEA '\n'
-
 #define MAX_LONGITUD 256
 
 #define HELP_MESSAGE "Options:\n-V, --version\tPrint version and quit.\n-h, --help\t\
@@ -58,7 +56,7 @@ int modifyFileBase(const char* inputFileName,
   size_t lenDataEncode = 0;
 
   while ((nread = getline(&line, &len, inputFile)) != -1) {
-    output = decodeBase64(line, nread,&lenDataEncode);
+    output = f(line, nread,&lenDataEncode);
     __write(outputFile,output,lenDataEncode);
     if(output) free(output);
   }

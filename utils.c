@@ -13,17 +13,6 @@ static int modTable[] = {0,2,1}; // cant de veces que tiene que iterar
 static const unsigned char base64_table[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 //INICIO FUNCIONES PRIVADAS
-/*static char* __buildDecodingTable() {
-  char* decodingTable = (char*)calloc(sizeof(char),256);
-  if (!decodingTable)	return NULL; 
-  
-  for (int i = 0; i < 64; i++)
-    decodingTable[(unsigned char) base64_table[i]] = i;
-
-  return decodingTable;
-}*/
-
-
 static bool __b64_isvalidchar(char c) {
   bool valid = false;
 	if (c >= '0' && c <= '9')
@@ -69,7 +58,7 @@ char* encodeBase64(const char *data,
   if(data == NULL || lenInput <= 0) return NULL;  
   
   size_t maxlenOutput = __len_base64_encode_output(lenInput);
-  char* output = (char*)calloc(sizeof(char), maxlenOutput + 1);
+  char* output = (char*)calloc(sizeof(char), maxlenOutput);
   if(!output) return NULL;
 
   size_t i,j;
@@ -102,11 +91,6 @@ char* encodeBase64(const char *data,
 char* decodeBase64(const char *data,
                              size_t lenInput,
                              size_t *lenOutput) {
-  for (size_t i = 0; i < lenInput; i++) {
-		if (!__b64_isvalidchar(data[i])) {
-			return NULL;
-		}
-	}
   unsigned char* dataPtr = (unsigned char*)data;
 
   unsigned char dTable[256];
@@ -126,6 +110,7 @@ char* decodeBase64(const char *data,
   size_t i;
 	size_t j;
 	for (i=0, j=0; i<lenInput; i+=4, j+=3) {
+    if (!__b64_isvalidchar(data[i])) continue;
 		decode = dTable[dataPtr[i]];
 		decode = (decode << 6) | dTable[dataPtr[i+1]];
 		decode = data[i+2] == CARACTER_IGUAL ? decode << 6 : (decode << 6) | dTable[dataPtr[i+2]];
@@ -139,6 +124,5 @@ char* decodeBase64(const char *data,
 
 	return output;
 }
-
 
 //FIN FUNCIONES PUBLICAS
