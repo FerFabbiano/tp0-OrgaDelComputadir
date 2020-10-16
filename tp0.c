@@ -25,30 +25,30 @@ file.\n"
 typedef char* (*callback)(const char *,size_t,size_t*);
 
 static int __write(FILE* file, char* data, size_t lenData) {
-	if(!file || !data) return EXIT_FAILURE;
-	fwrite(data,sizeof(char),lenData,file);
-	return SUCCESS;
+  if(!file || !data) return EXIT_FAILURE;
+  fwrite(data,sizeof(char),lenData,file);
+  return SUCCESS;
 }
 
 int modifyFileBase(char* inputFileName,char* outputFileName, callback f) {
-    char *line, *output = NULL;
-    FILE *infd = fopen(inputFileName, "r");
-    FILE *outfd = fopen(outputFileName, "w");
-
-    ssize_t nread = 0;
-    size_t len = 0;
-    size_t lenDataEncode = 0;
-
-    while ((nread = getline(&line, &len, infd)) != -1){
-        output = f(line, nread,&lenDataEncode);
-        __write(outfd,output,lenDataEncode);
-        free(output);
-        free(line);
-    }
-
-    fclose(infd);
-    fclose(outfd);
-    return SUCCESS;
+  char *line, *output = NULL;
+  FILE *infd = fopen(inputFileName, "r");
+  FILE *outfd = fopen(outputFileName, "w");
+  
+  ssize_t nread = 0;
+  size_t len = 0;
+  size_t lenDataEncode = 0;
+  while ((nread = getline(&line, &len, infd)) != -1){
+      output = f(line, nread,&lenDataEncode);
+      __write(outfd,output,lenDataEncode);
+      free(output);
+      free(line);
+  }
+  
+  fclose(infd);
+  fclose(outfd);
+  
+  return SUCCESS;
 }
 
 int main(int argc, char **argv){
