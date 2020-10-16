@@ -26,8 +26,7 @@ static bool __b64_isvalidchar(char c) {
 	return valid;
 }
 
-
-size_t __len_base64_decode_output(const char *input,size_t lenInput) {
+static size_t __len_base64_decode_output(const char *input,size_t lenInput) {
 	if (!input) return 0;
 	
   size_t len = 0;
