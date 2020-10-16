@@ -1,6 +1,5 @@
 #ifndef UTILS_H
 #define UTILS_H
-
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -9,5 +8,4 @@
 
 char* encodeBase64(const char *data,size_t lenInput,size_t* lenOutput);
 char* decodeBase64(const char *data,size_t lenInput,size_t* lenOutput);
-
 #endif
