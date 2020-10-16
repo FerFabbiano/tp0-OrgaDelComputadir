@@ -15,7 +15,7 @@
 
 #define NUEVA_LINEA '\n'
 
-#define BUFFER_NOMBRE_ARCHIVO 256
+#define MAX_LONGITUD 256
 
 #define HELP_MESSAGE "Options:\n-V, --version\tPrint version and quit.\n-h, --help\t\
 Print this information.\n-o, --output\tPath to output file.\n-i, \
@@ -64,8 +64,8 @@ int modifyFileBase(const char* inputFileName,
 int main(int argc, char **argv){
   int c;
   callback func = encodeBase64;
-  char inputFileName[BUFFER_NOMBRE_ARCHIVO];
-  char outputFileName[BUFFER_NOMBRE_ARCHIVO];
+  char inputFileName[MAX_LONGITUD];
+  char outputFileName[MAX_LONGITUD];
   const char* inputFileptr = NULL;
   const char* outputFileptr = NULL;
 
