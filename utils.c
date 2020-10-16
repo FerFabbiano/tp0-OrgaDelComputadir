@@ -87,9 +87,8 @@ char* decodeBase64(const char *data,
   if (data[lenInput - 2] == CARACTER_IGUAL) (lenOutputAux)--;
 
   char *output = malloc(sizeof(char)* lenOutputAux);
-	if(!output) return NULL;
-
-	memset(output,0,lenOutputAux);
+  if(!output) return NULL;
+  memset(output,0,lenOutputAux);
 
   for (int i = 0, j = 0; i < lenInput;) {
     uint32_t sextet_a = data[i] == CARACTER_IGUAL ? BYTE_NULO & i++ : decodingTable[(int) data[i++]];
@@ -106,8 +105,8 @@ char* decodeBase64(const char *data,
     if (j < lenOutputAux) output[j++] = (triple >> 1 * 8) & MASK_OCTET;
     if (j < lenOutputAux) output[j++] = (triple >> 0 * 8) & MASK_OCTET;
   }
-
-	free(decodingTable);
+  
+  free(decodingTable);
   *lenOutput = lenOutputAux;
   
   return output;
