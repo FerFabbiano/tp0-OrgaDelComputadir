@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <getopt.h>
+#include <stdbool.h>
 #include "utils.h"
 
 #define V_OPTION 'V'
@@ -29,7 +30,6 @@ typedef char* (*callback)(const char *,size_t,size_t*);
 static int __write(FILE* file, char* data, size_t lenData) {
   if(!file || !data) return EXIT_FAILURE;
   fwrite(data,sizeof(char),lenData,file);
-  putc(NUEVA_LINEA,file);
   return SUCCESS;
 }
 
@@ -40,36 +40,48 @@ void imprimir_salida(const char* mensaje) {
 int modifyFileBase(const char* inputFileName,
                   const char* outputFileName, 
                   callback f) {
-  char *line, *output = NULL;
+  char *line = NULL;
+  char *output = NULL;
 
   FILE* inputFile = stdin;
+  if (inputFileName) {
+    inputFile = fopen(inputFileName,"r");
+  }
+
   FILE* outputFile = stdout;
+  if (outputFileName) {
+    outputFile = fopen(outputFileName,"w");
+  }
   
   ssize_t nread = 0;
   size_t len = 0;
   size_t lenDataEncode = 0;
-  while ((nread = getline(&line, &len, inputFile)) != -1){
-    output = f(line, nread,&lenDataEncode);
+
+  while ((nread = getline(&line, &len, inputFile)) != -1) {
+    output = decodeBase64(line, nread,&lenDataEncode);
     __write(outputFile,output,lenDataEncode);
     if(output) free(output);
-    free(line);
   }
-
-  fclose(inputFile);
-  fclose(outputFile);
-
+  
+  free(line);
+  if(inputFileName) fclose(inputFile);
+  if(outputFileName) fclose(outputFile);
+  
   return SUCCESS;
 }
 
 int main(int argc, char **argv){
   int c;
   callback func = encodeBase64;
-  char inputFileName[MAX_LONGITUD];
-  char outputFileName[MAX_LONGITUD];
   const char* inputFileptr = NULL;
   const char* outputFileptr = NULL;
 
-  while (1) {
+  char inputFileName[MAX_LONGITUD];
+  char outputFileName[MAX_LONGITUD];
+  memset(inputFileName,0,MAX_LONGITUD);
+  memset(outputFileName,0,MAX_LONGITUD);
+
+  while (true) {
     int option_index = 0;
 
     static struct option long_options[] = {

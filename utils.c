@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <string.h>
+#include <stdbool.h>
 #include "utils.h"
 
 #define MASK_SEXTET 0x3F
@@ -9,17 +10,47 @@
 #define CARACTER_IGUAL '='
 
 static int modTable[] = {0,2,1}; // cant de veces que tiene que iterar
-static const char base64chars[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+static const unsigned char base64_table[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 //INICIO FUNCIONES PRIVADAS
-static char* __buildDecodingTable() {
-  char* decodingTable = malloc(sizeof(char) * 256);
+/*static char* __buildDecodingTable() {
+  char* decodingTable = (char*)calloc(sizeof(char),256);
   if (!decodingTable)	return NULL; 
   
   for (int i = 0; i < 64; i++)
-    decodingTable[(unsigned char) base64chars[i]] = i;
+    decodingTable[(unsigned char) base64_table[i]] = i;
 
   return decodingTable;
+}*/
+
+
+static bool __b64_isvalidchar(char c) {
+  bool valid = false;
+	if (c >= '0' && c <= '9')
+		valid = true;
+	if (c >= 'A' && c <= 'Z')
+		valid = true;
+	if (c >= 'a' && c <= 'z')
+		valid = true;
+	if (c == '+' || c == '/' || c == '=')
+	  valid = true;
+	return valid;
+}
+
+
+size_t __len_base64_decode_output(const char *input,size_t lenInput) {
+	if (!input) return 0;
+	
+  size_t len = 0;
+	len = lenInput / 4 * 3;
+	
+	for (size_t i = 0; i < lenInput; i++) {
+    if (input[i] == CARACTER_IGUAL) {
+			len--;
+		}
+  }
+
+	return len;
 }
 
 static size_t __len_base64_encode_output(size_t input_len) {
@@ -29,11 +60,6 @@ static size_t __len_base64_encode_output(size_t input_len) {
   ouput_len *= 4;
   return ouput_len;
 }
-
-static size_t __len_base64_decode_output(size_t lenInput) {
-  return lenInput / 4 * 3;
-}
-
 //FIN FUNCIONES PRIVADAS
 
 //INICIO FUNCIONES PUBLICAS
@@ -43,10 +69,9 @@ char* encodeBase64(const char *data,
   if(data == NULL || lenInput <= 0) return NULL;  
   
   size_t maxlenOutput = __len_base64_encode_output(lenInput);
-  char* output = malloc(sizeof(char)* maxlenOutput);
+  char* output = (char*)calloc(sizeof(char), maxlenOutput + 1);
   if(!output) return NULL;
 
-  memset(output,0,maxlenOutput);
   size_t i,j;
 
   for (i = 0,j=0; i < lenInput; j+=4) {
@@ -61,10 +86,10 @@ char* encodeBase64(const char *data,
     uint32_t sextetC = (bits >> SHIFT_SEXTET) & MASK_SEXTET;
     uint32_t sextetD = (bits) & MASK_SEXTET;
   
-    output[j] = base64chars[sextetA];
-    output[j+1] = base64chars[sextetB];
-    output[j+2] = base64chars[sextetC];
-    output[j+3] = base64chars[sextetD];
+    output[j] = base64_table[sextetA];
+    output[j+1] = base64_table[sextetB];
+    output[j+2] = base64_table[sextetC];
+    output[j+3] = base64_table[sextetD];
   }
 
   for (int i=0; i < modTable[lenInput%3]; i++)
@@ -74,41 +99,46 @@ char* encodeBase64(const char *data,
   return output;
 }
 
-
 char* decodeBase64(const char *data,
                              size_t lenInput,
                              size_t *lenOutput) {
-  char *decodingTable = __buildDecodingTable();
-  if(!decodingTable) return NULL;
-  
-  size_t lenOutputAux = __len_base64_decode_output(lenInput);
-  
-  if (data[lenInput - 1] == CARACTER_IGUAL) (lenOutputAux)--;
-  if (data[lenInput - 2] == CARACTER_IGUAL) (lenOutputAux)--;
+  for (size_t i = 0; i < lenInput; i++) {
+		if (!__b64_isvalidchar(data[i])) {
+			return NULL;
+		}
+	}
+  unsigned char* dataPtr = (unsigned char*)data;
 
-  char *output = malloc(sizeof(char)* lenOutputAux);
+  unsigned char dTable[256];
+  memset(dTable, -1, 256);
+	for (size_t i = 0; i < sizeof(base64_table) - 1; i++)
+		dTable[base64_table[i]] = (unsigned char) i;
+
+	if (!data) return NULL;
+  
+  size_t lenOutputAux = __len_base64_decode_output(data,lenInput);
+
+  char *output = (char*)calloc(sizeof(char), lenOutputAux);
   if(!output) return NULL;
-  memset(output,0,lenOutputAux);
 
-  for (int i = 0, j = 0; i < lenInput;) {
-    uint32_t sextet_a = data[i] == CARACTER_IGUAL ? BYTE_NULO & i++ : decodingTable[(int) data[i++]];
-    uint32_t sextet_b = data[i] == CARACTER_IGUAL ? BYTE_NULO & i++ : decodingTable[(int) data[i++]];
-    uint32_t sextet_c = data[i] == CARACTER_IGUAL ? BYTE_NULO & i++ : decodingTable[(int) data[i++]];
-    uint32_t sextet_d = data[i] == CARACTER_IGUAL ? BYTE_NULO & i++ : decodingTable[(int) data[i++]];
+	uint32_t decode;
   
-    uint32_t triple = (sextet_a << 3 * SHIFT_SEXTET)
-    + (sextet_b << 2 * SHIFT_SEXTET)
-    + (sextet_c << SHIFT_SEXTET)
-    + sextet_d;
-  
-    if (j < lenOutputAux) output[j++] = (triple >> 2 * 8) & MASK_OCTET;
-    if (j < lenOutputAux) output[j++] = (triple >> 1 * 8) & MASK_OCTET;
-    if (j < lenOutputAux) output[j++] = (triple >> 0 * 8) & MASK_OCTET;
-  }
-  
-  free(decodingTable);
+  size_t i;
+	size_t j;
+	for (i=0, j=0; i<lenInput; i+=4, j+=3) {
+		decode = dTable[dataPtr[i]];
+		decode = (decode << 6) | dTable[dataPtr[i+1]];
+		decode = data[i+2] == CARACTER_IGUAL ? decode << 6 : (decode << 6) | dTable[dataPtr[i+2]];
+		decode = data[i+3] == CARACTER_IGUAL ? decode << 6 : (decode << 6) | dTable[dataPtr[i+3]];
+
+		if (j < lenOutputAux) output[j] = (decode >> 16) & MASK_OCTET;
+    if (j < lenOutputAux) output[j+1] = (decode >> 8) & MASK_OCTET;
+    if (j < lenOutputAux) output[j+2] = (decode) & MASK_OCTET;
+	}
   *lenOutput = lenOutputAux;
-  
-  return output;
+
+	return output;
 }
+
+
 //FIN FUNCIONES PUBLICAS
