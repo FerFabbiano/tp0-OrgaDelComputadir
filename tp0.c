@@ -1,3 +1,5 @@
+#define  _POSIX_C_SOURCE 200809L
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -10,6 +12,8 @@
 #define O_OPTION 'o'
 #define I_OPTION 'i'
 #define D_OPTION 'd'
+
+#define BUFFER_NOMBRE_ARCHIVO 256
 
 #define HELP_MESSAGE "Options:\n-V, --version   Print version and quit.\n-h, --help   \
                       Print this information.\n-o, --output   Path to output file.\n-i, \
@@ -33,14 +37,14 @@ int modifyFileBase(char* inputFileName,char* outputFileName, callback f) {
 
     ssize_t nread = 0;
     size_t len = 0;
-    
+
     while ((nread = getline(&line, &len, infd)) != -1){
         output = f(line, nread);
         __write(outfd,output,strlen(output));
         free(output);
         free(line);
     }
-    
+
     fclose(infd);
     fclose(outfd);
     return SUCCESS;
@@ -49,11 +53,12 @@ int modifyFileBase(char* inputFileName,char* outputFileName, callback f) {
 int main(int argc, char **argv){
   int c;
   callback func = encodeBase64;
-  char inputFileName[256];
-  char outputFileName[256];
-
+  char inputFileName[BUFFER_NOMBRE_ARCHIVO];
+  char outputFileName[BUFFER_NOMBRE_ARCHIVO];
+  char finalizar = 1;
   while (1) {
     int option_index = 0;
+
     static struct option long_options[] = {
       {"version", no_argument,0, 'V'},
       {"help", no_argument, 0, 'h'},
@@ -77,10 +82,12 @@ int main(int argc, char **argv){
 
       case I_OPTION:
         memcpy(inputFileName,optarg,strlen(optarg));
+	finalizar = 0;
         break;
 
       case O_OPTION:
         memcpy(outputFileName,optarg,strlen(optarg));
+	finalizar = 0;
         break;
 
       case D_OPTION:
@@ -91,8 +98,8 @@ int main(int argc, char **argv){
         printf(INVALID_MESSAGE);
       }
   }
-
-  modifyFileBase(inputFileName,outputFileName,func);
+  if(!finalizar)
+  	modifyFileBase(inputFileName,outputFileName,func);
 
   exit(EXIT_SUCCESS);
 }

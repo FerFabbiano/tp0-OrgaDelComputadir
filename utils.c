@@ -15,7 +15,7 @@ static char *decodingTable = NULL;
 static void __buildDecodingTable() {
     decodingTable = malloc(sizeof(char) * 256);
 	if (!decodingTable)	return;
-	
+
     for (int i = 0; i < 64; i++)
         decodingTable[(unsigned char) base64chars[i]] = i;
 }
@@ -33,18 +33,18 @@ static size_t __len_base64_decode_output(size_t lenInput) {
 }
 
 
-char* encodeBase64(const char *data, 
+char* encodeBase64(const char *data,
 					size_t lenInput/*,
 					ssize_t *lenOutput*/) {
-    ssize_t lenOutput = __len_base64_encode_output(lenInput);
+    size_t lenOutput = __len_base64_encode_output(lenInput);
 
 	if(data == NULL || lenInput <= 0) return NULL;
-    
+
     char* output = malloc(sizeof(char) * lenOutput);
 	if(!output) return NULL;
 
     memset(output,0,(lenOutput));
-    
+
     size_t i,j;
 
     for (i = 0,j=0; i < lenInput; j+=4) {
@@ -65,7 +65,7 @@ char* encodeBase64(const char *data,
         output[j+3] = base64chars[sextetD];
     }
 
-    for(int i=0; i < modTable[lenInput%3]; i++) 
+    for(int i=0; i < modTable[lenInput%3]; i++)
         output[lenOutput - 1 -i] = CARACTER_IGUAL;
 
     return output;
@@ -75,36 +75,36 @@ char* encodeBase64(const char *data,
 char* decodeBase64(const char *data,
                              size_t lenInput/*,
                              ssize_t *lenOutput*/) {
- 
+
     if (decodingTable == NULL) __buildDecodingTable();
-  
-    ssize_t lenOutput = __len_base64_decode_output(lenInput);
+
+    size_t lenOutput = __len_base64_decode_output(lenInput);
     if (data[lenInput - 1] == CARACTER_IGUAL) (lenOutput)--;
     if (data[lenInput - 2] == CARACTER_IGUAL) (lenOutput)--;
- 
+
     char *output = malloc(sizeof(char)* (lenOutput));
 	if(!output) return NULL;
 
 	memset(output,0,lenOutput);
- 
+
     for (int i = 0, j = 0; i < lenInput;) {
         uint32_t sextet_a = data[i] == CARACTER_IGUAL ? BYTE_NULO & i++ : decodingTable[(int) data[i++]];
         uint32_t sextet_b = data[i] == CARACTER_IGUAL ? BYTE_NULO & i++ : decodingTable[(int) data[i++]];
         uint32_t sextet_c = data[i] == CARACTER_IGUAL ? BYTE_NULO & i++ : decodingTable[(int) data[i++]];
         uint32_t sextet_d = data[i] == CARACTER_IGUAL ? BYTE_NULO & i++ : decodingTable[(int) data[i++]];
- 
+
         uint32_t triple = (sextet_a << 3 * SHIFT_SEXTET)
         + (sextet_b << 2 * SHIFT_SEXTET)
         + (sextet_c << SHIFT_SEXTET)
         + sextet_d;
- 
+
         if (j < lenOutput) output[j++] = (triple >> 2 * 8) & MASK_OCTET;
         if (j < lenOutput) output[j++] = (triple >> 1 * 8) & MASK_OCTET;
         if (j < lenOutput) output[j++] = (triple >> 0 * 8) & MASK_OCTET;
     }
 
 	free(decodingTable);
- 
+
     return output;
 }
 
