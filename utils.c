@@ -34,16 +34,16 @@ static size_t __len_base64_decode_output(size_t lenInput) {
 
 
 char* encodeBase64(const char *data,
-					size_t lenInput/*,
-					ssize_t *lenOutput*/) {
-    size_t lenOutput = __len_base64_encode_output(lenInput);
+					size_t lenInput,
+					size_t *lenOutput) {
+    size_t maxlenOutput = __len_base64_encode_output(lenInput);
 
 	if(data == NULL || lenInput <= 0) return NULL;
 
-    char* output = malloc(sizeof(char) * lenOutput);
+    char* output = malloc(sizeof(char)* maxlenOutput);
 	if(!output) return NULL;
 
-    memset(output,0,(lenOutput));
+    memset(output,0,maxlenOutput);
 
     size_t i,j;
 
@@ -66,26 +66,26 @@ char* encodeBase64(const char *data,
     }
 
     for(int i=0; i < modTable[lenInput%3]; i++)
-        output[lenOutput - 1 -i] = CARACTER_IGUAL;
-
+        output[maxlenOutput - 1 -i] = CARACTER_IGUAL;
+    *lenOutput = strlen(output);
     return output;
 }
 
 
 char* decodeBase64(const char *data,
-                             size_t lenInput/*,
-                             ssize_t *lenOutput*/) {
+                             size_t lenInput,
+                             size_t *lenOutput) {
 
-    if (decodingTable == NULL) __buildDecodingTable();
+    if (!decodingTable) __buildDecodingTable();
 
-    size_t lenOutput = __len_base64_decode_output(lenInput);
-    if (data[lenInput - 1] == CARACTER_IGUAL) (lenOutput)--;
-    if (data[lenInput - 2] == CARACTER_IGUAL) (lenOutput)--;
+    size_t lenOutputAux = __len_base64_decode_output(lenInput);
+    if (data[lenInput - 1] == CARACTER_IGUAL) (lenOutputAux)--;
+    if (data[lenInput - 2] == CARACTER_IGUAL) (lenOutputAux)--;
 
-    char *output = malloc(sizeof(char)* (lenOutput));
+    char *output = malloc(sizeof(char)* lenOutputAux);
 	if(!output) return NULL;
 
-	memset(output,0,lenOutput);
+	memset(output,0,lenOutputAux);
 
     for (int i = 0, j = 0; i < lenInput;) {
         uint32_t sextet_a = data[i] == CARACTER_IGUAL ? BYTE_NULO & i++ : decodingTable[(int) data[i++]];
@@ -98,13 +98,13 @@ char* decodeBase64(const char *data,
         + (sextet_c << SHIFT_SEXTET)
         + sextet_d;
 
-        if (j < lenOutput) output[j++] = (triple >> 2 * 8) & MASK_OCTET;
-        if (j < lenOutput) output[j++] = (triple >> 1 * 8) & MASK_OCTET;
-        if (j < lenOutput) output[j++] = (triple >> 0 * 8) & MASK_OCTET;
+        if (j < lenOutputAux) output[j++] = (triple >> 2 * 8) & MASK_OCTET;
+        if (j < lenOutputAux) output[j++] = (triple >> 1 * 8) & MASK_OCTET;
+        if (j < lenOutputAux) output[j++] = (triple >> 0 * 8) & MASK_OCTET;
     }
 
 	free(decodingTable);
-
+    *lenOutput = lenOutputAux;
     return output;
 }
 

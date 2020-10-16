@@ -15,16 +15,16 @@
 
 #define BUFFER_NOMBRE_ARCHIVO 256
 
-#define HELP_MESSAGE "Options:\n-V, --version   Print version and quit.\n-h, --help   \
-                      Print this information.\n-o, --output   Path to output file.\n-i, \
-                      --input   Path to input file.\n-d, --decode   Decode a base64-encoded \
-                      file.\n"
+#define HELP_MESSAGE "Options:\n-V, --version\tPrint version and quit.\n-h, --help\t\
+Print this information.\n-o, --output\tPath to output file.\n-i, \
+--input\tPath to input file.\n-d, --decode\tDecode a base64-encoded\
+file.\n"
+
 #define INVALID_MESSAGE "Invalid option , use -h or --help to list valid commands\n"
 
-typedef char* (*callback)(const char *, size_t);
+typedef char* (*callback)(const char *,size_t,size_t*);
 
-
-static int __write(FILE* file, char* data, ssize_t lenData) {
+static int __write(FILE* file, char* data, size_t lenData) {
 	if(!file || !data) return EXIT_FAILURE;
 	fwrite(data,sizeof(char),lenData,file);
 	return SUCCESS;
@@ -37,10 +37,11 @@ int modifyFileBase(char* inputFileName,char* outputFileName, callback f) {
 
     ssize_t nread = 0;
     size_t len = 0;
+    size_t lenDataEncode = 0;
 
     while ((nread = getline(&line, &len, infd)) != -1){
-        output = f(line, nread);
-        __write(outfd,output,strlen(output));
+        output = f(line, nread,&lenDataEncode);
+        __write(outfd,output,lenDataEncode);
         free(output);
         free(line);
     }
@@ -52,10 +53,11 @@ int modifyFileBase(char* inputFileName,char* outputFileName, callback f) {
 
 int main(int argc, char **argv){
   int c;
+  char finalizar = 1;
   callback func = encodeBase64;
   char inputFileName[BUFFER_NOMBRE_ARCHIVO];
   char outputFileName[BUFFER_NOMBRE_ARCHIVO];
-  char finalizar = 1;
+
   while (1) {
     int option_index = 0;
 
@@ -82,12 +84,12 @@ int main(int argc, char **argv){
 
       case I_OPTION:
         memcpy(inputFileName,optarg,strlen(optarg));
-	finalizar = 0;
+        finalizar = 0;
         break;
 
       case O_OPTION:
         memcpy(outputFileName,optarg,strlen(optarg));
-	finalizar = 0;
+	      finalizar = 0;
         break;
 
       case D_OPTION:
@@ -98,6 +100,7 @@ int main(int argc, char **argv){
         printf(INVALID_MESSAGE);
       }
   }
+
   if(!finalizar)
   	modifyFileBase(inputFileName,outputFileName,func);
 
