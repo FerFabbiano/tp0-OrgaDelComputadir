@@ -39,10 +39,10 @@ int modifyFileBase(char* inputFileName,char* outputFileName, callback f) {
   size_t len = 0;
   size_t lenDataEncode = 0;
   while ((nread = getline(&line, &len, infd)) != -1){
-      output = f(line, nread,&lenDataEncode);
-      __write(outfd,output,lenDataEncode);
-      free(output);
-      free(line);
+    output = f(line, nread,&lenDataEncode);
+    __write(outfd,output,lenDataEncode);
+    free(output);
+    free(line);
   }
   
   fclose(infd);
@@ -77,7 +77,6 @@ int main(int argc, char **argv){
       case V_OPTION:
         printf("Version: 1.0.0\n");
         break;
-
       case H_OPTION:
         printf(HELP_MESSAGE);
         break;
@@ -98,11 +97,11 @@ int main(int argc, char **argv){
 
       default:
         printf(INVALID_MESSAGE);
-      }
+    }
   }
 
   if(!finalizar)
-  	modifyFileBase(inputFileName,outputFileName,func);
+    modifyFileBase(inputFileName,outputFileName,func);
 
   exit(EXIT_SUCCESS);
 }
