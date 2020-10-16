@@ -13,6 +13,8 @@
 #define I_OPTION 'i'
 #define D_OPTION 'd'
 
+#define NUEVA_LINEA '\n'
+
 #define BUFFER_NOMBRE_ARCHIVO 256
 
 #define HELP_MESSAGE "Options:\n-V, --version\tPrint version and quit.\n-h, --help\t\
@@ -27,36 +29,45 @@ typedef char* (*callback)(const char *,size_t,size_t*);
 static int __write(FILE* file, char* data, size_t lenData) {
   if(!file || !data) return EXIT_FAILURE;
   fwrite(data,sizeof(char),lenData,file);
+  putc(NUEVA_LINEA,file);
   return SUCCESS;
 }
 
-int modifyFileBase(char* inputFileName,char* outputFileName, callback f) {
+void imprimir_salida(const char* mensaje) {
+  fprintf(stdout,"%s\n",mensaje);
+}
+
+int modifyFileBase(const char* inputFileName,
+                  const char* outputFileName, 
+                  callback f) {
   char *line, *output = NULL;
-  FILE *infd = fopen(inputFileName, "r");
-  FILE *outfd = fopen(outputFileName, "w");
+
+  FILE* inputFile = stdin;
+  FILE* outputFile = stdout;
   
   ssize_t nread = 0;
   size_t len = 0;
   size_t lenDataEncode = 0;
-  while ((nread = getline(&line, &len, infd)) != -1){
+  while ((nread = getline(&line, &len, inputFile)) != -1){
     output = f(line, nread,&lenDataEncode);
-    __write(outfd,output,lenDataEncode);
-    free(output);
+    __write(outputFile,output,lenDataEncode);
+    if(output) free(output);
     free(line);
   }
-  
-  fclose(infd);
-  fclose(outfd);
-  
+
+  fclose(inputFile);
+  fclose(outputFile);
+
   return SUCCESS;
 }
 
 int main(int argc, char **argv){
   int c;
-  char finalizar = 1;
   callback func = encodeBase64;
   char inputFileName[BUFFER_NOMBRE_ARCHIVO];
   char outputFileName[BUFFER_NOMBRE_ARCHIVO];
+  const char* inputFileptr = NULL;
+  const char* outputFileptr = NULL;
 
   while (1) {
     int option_index = 0;
@@ -75,20 +86,20 @@ int main(int argc, char **argv){
 
     switch (c) {
       case V_OPTION:
-        printf("Version: 1.0.0\n");
+        imprimir_salida("Version: 1.0.0\n");
         break;
       case H_OPTION:
-        printf(HELP_MESSAGE);
+        imprimir_salida(HELP_MESSAGE);
         break;
 
       case I_OPTION:
         memcpy(inputFileName,optarg,strlen(optarg));
-        finalizar = 0;
+        inputFileptr = inputFileName;
         break;
 
       case O_OPTION:
         memcpy(outputFileName,optarg,strlen(optarg));
-	      finalizar = 0;
+        outputFileptr = outputFileName;
         break;
 
       case D_OPTION:
@@ -96,12 +107,11 @@ int main(int argc, char **argv){
         break;
 
       default:
-        printf(INVALID_MESSAGE);
+        imprimir_salida(INVALID_MESSAGE);
     }
   }
 
-  if(!finalizar)
-    modifyFileBase(inputFileName,outputFileName,func);
+  modifyFileBase(inputFileptr,outputFileptr,func);
 
   exit(EXIT_SUCCESS);
 }
