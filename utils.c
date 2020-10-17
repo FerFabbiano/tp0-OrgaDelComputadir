@@ -50,6 +50,35 @@ static size_t __len_base64_encode_output(size_t inputLen) {
 
 	return ouputLen;
 }
+
+static int __write(FILE* file, char* data, size_t lenData) {
+  if(!file || !data) return EXIT_FAILURE;
+  fwrite(data,sizeof(char),lenData,file);
+  return SUCCESS;
+}
+
+static int __processFile(FILE* fdin,FILE* fdout,char* buffer,size_t lenBuffer,bool encode) {
+  char* output = NULL;
+  size_t len = 0;
+  size_t nread = 0;
+  while ((nread = fread(buffer,sizeof(char),lenBuffer,fdin)) > 0) {
+    if(encode) {
+      output = encodeBase64(buffer, nread,&len);
+    } else {
+      output = decodeBase64(buffer, nread,&len);
+    }
+    if(output){
+      __write(fdout,output,len);
+      free(output);
+    }
+    memset(buffer,0,lenBuffer);
+  }
+
+  if(nread == -1) return EXIT_FAILURE;
+  
+  return SUCCESS;
+}
+
 //FIN FUNCIONES PRIVADAS
 
 //INICIO FUNCIONES PUBLICAS
@@ -59,7 +88,7 @@ char* encodeBase64(const char *data,
   if(data == NULL || lenInput <= 0) return NULL;  
   
   size_t maxlenOutput = __len_base64_encode_output(lenInput);
-  char* output = (char*)malloc(sizeof(char)* (maxlenOutput + 1));
+  char* output = (char*)calloc(sizeof(char), maxlenOutput + 1);
   if(!output) return NULL;
 
   size_t i,j;
@@ -117,13 +146,27 @@ char* decodeBase64(const char *data,
 		decode = data[i+2] == CARACTER_IGUAL ? decode << 6 : (decode << 6) | dTable[dataPtr[i+2]];
 		decode = data[i+3] == CARACTER_IGUAL ? decode << 6 : (decode << 6) | dTable[dataPtr[i+3]];
 
-		if (j < lenOutputAux) output[j] = (decode >> 16) & MASK_OCTET;
-    if (j < lenOutputAux) output[j+1] = (decode >> 8) & MASK_OCTET;
-    if (j < lenOutputAux) output[j+2] = (decode) & MASK_OCTET;
+		output[j] = (decode >> 16) & MASK_OCTET;
+    if (data[i+2] != '=')
+			output[j+1] = (decode >> 8) & MASK_OCTET;
+		if (data[i+3] != '=')
+			output[j+2] = decode & MASK_OCTET;
 	}
   *lenOutput = strlen(output);
 
 	return output;
+}
+
+int encodeFileToBase64(FILE* fdin,FILE* fdout) {
+  char buffer[ENCODE_SIZE];
+  memset(buffer,0,ENCODE_SIZE);
+  return __processFile(fdin,fdout,buffer,ENCODE_SIZE,true);
+}
+
+int decodeFileFromBase64(FILE* fdin,FILE* fdout) {
+  char buffer[DECODE_SIZE];
+  memset(buffer,0,DECODE_SIZE);
+  return __processFile(fdin,fdout,buffer,DECODE_SIZE,false);
 }
 
 //FIN FUNCIONES PUBLICAS

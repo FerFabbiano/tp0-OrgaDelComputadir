@@ -26,64 +26,21 @@ file.\n"
 
 #define INVALID_MESSAGE "Invalid option , use -h or --help to list valid commands\n"
 
-typedef char* (*callback)(const char *,size_t,size_t*);
-
-static int __write(FILE* file, char* data, size_t lenData) {
-  if(!file || !data) return EXIT_FAILURE;
-  fwrite(data,sizeof(char),lenData,file);
-  return SUCCESS;
-}
+enum operacion {DECODE,ENCODE,HELP,VERSION};
 
 void imprimir_salida(const char* mensaje) {
   fprintf(stdout,"%s\n",mensaje);
 }
 
-int modifyFileBase(const char* inputFileName,
-                  const char* outputFileName, 
-                  callback f) {
-  char *line = NULL;
-  char *output = NULL;
-
-  FILE* inputFile = stdin;
-  if (inputFileName) {
-    inputFile = fopen(inputFileName,"r");
-    if (!inputFile) {
-      printf("El archivo de input no existe\n");
-      return EXIT_FAILURE;
-    }
-  }
-
-  FILE* outputFile = stdout;
-  if (outputFileName) {
-    outputFile = fopen(outputFileName,"w");
-  }
-
-  char buffer[LEN_BUFFER];
-  memset(buffer,0,LEN_BUFFER);
-  size_t len = 0;
-  size_t nread = 0;
-  while ((nread = fread(buffer,sizeof(char),LEN_BUFFER,inputFile)) > 0) {
-    output = f(buffer, nread,&len);
-    __write(outputFile,output,len);
-    memset(buffer,0,LEN_BUFFER);
-    if(output) free(output);
-  }
-  
-  free(line);
-  if(inputFileName) fclose(inputFile);
-  if(outputFileName) fclose(outputFile);
-  
-  return SUCCESS;
+void imprimir_error(const char* error) {
+  fprintf(stderr,"%s\n",error);
 }
 
 int main(int argc, char **argv){
   int c;
-  bool help = false;
-  bool version = false;
-  callback func = encodeBase64;
+  int operacion = ENCODE;
   const char* inputFileptr = NULL;
   const char* outputFileptr = NULL;
-
   char inputFileName[MAX_LONGITUD];
   char outputFileName[MAX_LONGITUD];
   memset(inputFileName,0,MAX_LONGITUD);
@@ -106,42 +63,57 @@ int main(int argc, char **argv){
 
     switch (c) {
       case V_OPTION:
-        version = true;
+        operacion = VERSION;
         break;
       case H_OPTION:
-        help = true;
+        operacion = HELP;
         break;
-
       case I_OPTION:
         memcpy(inputFileName,optarg,strlen(optarg));
         inputFileptr = inputFileName;
         break;
-
       case O_OPTION:
         memcpy(outputFileName,optarg,strlen(optarg));
         outputFileptr = outputFileName;
         break;
-
       case D_OPTION:
-        func = decodeBase64;
+        operacion = DECODE;
         break;
 
       default:
         imprimir_salida(INVALID_MESSAGE);
     }
   }
+  
+  if(operacion == ENCODE || operacion == DECODE) {
+    FILE* outfd = stdout;
+    FILE* infd = stdin;
+    
+    if (inputFileptr) {
+      infd = fopen(inputFileName,"r");
+      if (!infd) {
+        imprimir_error("El archivo de input no existe\n");
+        return EXIT_FAILURE;
+      }
+    }
 
-  if (help) {
+    if (outputFileptr) {
+      outfd = fopen(outputFileName,"w");
+    }
+
+    if(operacion) {
+      encodeFileToBase64(infd,outfd);
+    } else {
+      decodeFileFromBase64(infd,outfd);
+    }
+
+    fclose(infd);
+    fclose(outfd);
+  } else if (operacion == HELP) {
     imprimir_salida(HELP_MESSAGE);
-    return EXIT_SUCCESS;
-  }
-
-  if (version) {
+  } else if(operacion == VERSION) {
     imprimir_salida("Version: 1.0.0\n");
-    return EXIT_SUCCESS;
-  }
+  } 
 
-  modifyFileBase(inputFileptr,outputFileptr,func);
-
-  exit(EXIT_SUCCESS);
+  return EXIT_SUCCESS;
 }
