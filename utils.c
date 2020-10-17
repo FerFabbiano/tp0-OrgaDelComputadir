@@ -85,7 +85,7 @@ static int __processFile(FILE* fdin,FILE* fdout,char* buffer,size_t lenBuffer,bo
 char* encodeBase64(const char *data,
 	                size_t lenInput,
 		              size_t *lenOutput) {
-  if(data == NULL || lenInput <= 0) return NULL;  
+  if(data == NULL || lenInput < 0) return NULL;  
   
   size_t maxlenOutput = __len_base64_encode_output(lenInput);
   char* output = (char*)calloc(sizeof(char), maxlenOutput + 1);
@@ -158,12 +158,14 @@ char* decodeBase64(const char *data,
 }
 
 int encodeFileToBase64(FILE* fdin,FILE* fdout) {
+  if (!fdin || !fdout) return EXIT_FAILURE;
   char buffer[ENCODE_SIZE];
   memset(buffer,0,ENCODE_SIZE);
   return __processFile(fdin,fdout,buffer,ENCODE_SIZE,true);
 }
 
 int decodeFileFromBase64(FILE* fdin,FILE* fdout) {
+  if (!fdin || !fdout) return EXIT_FAILURE;
   char buffer[DECODE_SIZE];
   memset(buffer,0,DECODE_SIZE);
   return __processFile(fdin,fdout,buffer,DECODE_SIZE,false);
