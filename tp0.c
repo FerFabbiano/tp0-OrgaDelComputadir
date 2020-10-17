@@ -15,10 +15,6 @@
 #define D_OPTION 'd'
 
 #define MAX_LONGITUD 256
-//la longitud del buffer debe conincidir para q el 
-//encode no agregue = al final
-#define LEN_BUFFER 40
-
 #define HELP_MESSAGE "Options:\n-V, --version\tPrint version and quit.\n-h, --help\t\
 Print this information.\n-o, --output\tPath to output file.\n-i, \
 --input\tPath to input file.\n-d, --decode\tDecode a base64-encoded\
