@@ -44,6 +44,10 @@ int modifyFileBase(const char* inputFileName,
   FILE* inputFile = stdin;
   if (inputFileName) {
     inputFile = fopen(inputFileName,"r");
+    if (!inputFile) {
+      printf("El archivo de input no existe\n");
+      return EXIT_FAILURE;
+    }
   }
 
   FILE* outputFile = stdout;
@@ -70,6 +74,8 @@ int modifyFileBase(const char* inputFileName,
 
 int main(int argc, char **argv){
   int c;
+  bool help = false;
+  bool version = false;
   callback func = encodeBase64;
   const char* inputFileptr = NULL;
   const char* outputFileptr = NULL;
@@ -96,10 +102,10 @@ int main(int argc, char **argv){
 
     switch (c) {
       case V_OPTION:
-        imprimir_salida("Version: 1.0.0\n");
+        version = true;
         break;
       case H_OPTION:
-        imprimir_salida(HELP_MESSAGE);
+        help = true;
         break;
 
       case I_OPTION:
@@ -119,6 +125,16 @@ int main(int argc, char **argv){
       default:
         imprimir_salida(INVALID_MESSAGE);
     }
+  }
+
+  if (help) {
+    imprimir_salida(HELP_MESSAGE);
+    return EXIT_SUCCESS;
+  }
+
+  if (version) {
+    imprimir_salida("Version: 1.0.0\n");
+    return EXIT_SUCCESS;
   }
 
   modifyFileBase(inputFileptr,outputFileptr,func);
