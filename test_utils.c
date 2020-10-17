@@ -1,4 +1,4 @@
-#include "/home/franco/Escritorio/OrgaDelComputador/tp0-OrgaDelComputador/utils.h"
+#include "utils.h"
 #include "string.h"
 
 #define MAX_LONGITUD 256
@@ -47,21 +47,6 @@ int test02PasoABase64UnaFraseInvalida() {
 		return EXIT_FAILURE;
 	}
 }
-/*
-int test03ComparoResultadosConFuncionDeOtraBiblioteca() {
-	size_t outputLen = 0;
-	char* frase = "En un lugar de La Mancha de cuyo nombre no quiero acordarme";
-	char* resultado = encodeBase64(frase,strlen(frase),&outputLen);
-
-	if (strcmp(a64l(),resultado) == 0) {
-		printf("Paso una frase a base64 : OK\n");
-		return SUCCESS;
-	} else {
-		printf("Paso una frase a base64 : ERROR\n");
-		return EXIT_FAILURE;
-	}
-}
-*/
 
 //Pruebas de la funcion decodeBase64
 
@@ -112,11 +97,11 @@ int test02DecodificoUnaFraseInvalida() {
 //Pruebas de la funcion encodeFileToBase64
 
 int test00CodificoUsandoDosArchivosValidos() {
-	FILE* inputFile = fopen("/home/franco/Escritorio/OrgaDelComputador/tp0-OrgaDelComputador/entrada.txt", "r+");
-	FILE* outputFile = fopen("/home/franco/Escritorio/OrgaDelComputador/tp0-OrgaDelComputador/textoCodificado.txt","r+");
+	FILE* inputFile = fopen("entrada.txt", "r+");
+	FILE* outputFile = fopen("textoCodificado.txt","r+");
 
 	int resultado = encodeFileToBase64(inputFile,outputFile);
-	char* inputFileEnconding = "RW4gdW4gbHVnYXIgZGUgTGEgTWFuY2hhIGRlIGN1eW8gbm9tYnJlIG5vIHF1aWVybyBhY29yZGFybWUgaG9sYSBjb21vIGVzdGFzIHN0ZQppaWplcmlyZyBlbCBmaW4gZGVsIG11bmRvCg==";
+	char* inputFileEnconding = "RW4gdW4gbHVnYXIgZGUgTGEgTWFuY2hhIGRlIGN1eW8gbm9tYnJlIG5vIHF1aWVybyBhY29yZGFybWUgaG9sYSBjb21vIGVzdGFzIHN0ZQppaWplcmlyZyBlbCBmaW4gZGVsIG11bmRvCgo=";
 
 	if (resultado == SUCCESS) {
 		char outputFileContent [MAX_LONGITUD];
@@ -146,8 +131,8 @@ int test00CodificoUsandoDosArchivosValidos() {
 }
 
 int test01CodificoUsandoArchivoDeInputInexistente() {
-	FILE* inputFile = fopen("/home/franco/Escritorio/OrgaDelComputador/tp0-OrgaDelComputador/noExiste.txt", "r+");
-	FILE* outputFile = fopen("/home/franco/Escritorio/OrgaDelComputador/tp0-OrgaDelComputador/textoCodificado.txt","r+");
+	FILE* inputFile = fopen("noExiste.txt", "r+");
+	FILE* outputFile = fopen("textoCodificado.txt","r+");
 
 	int resultado = encodeFileToBase64(inputFile,outputFile);
 
@@ -164,8 +149,8 @@ int test01CodificoUsandoArchivoDeInputInexistente() {
 }
 
 int test02CodificoUsandoArchivoDeOutputInexistente() {
-	FILE* inputFile = fopen("/home/franco/Escritorio/OrgaDelComputador/tp0-OrgaDelComputador/entrada.txt", "r+");
-	FILE* outputFile = fopen("/home/franco/Escritorio/OrgaDelComputador/tp0-OrgaDelComputador/noExiste.txt","r+");
+	FILE* inputFile = fopen("entrada.txt", "r+");
+	FILE* outputFile = fopen("noExiste.txt","r+");
 
 	int resultado = encodeFileToBase64(inputFile,outputFile);
 
@@ -181,15 +166,50 @@ int test02CodificoUsandoArchivoDeOutputInexistente() {
 	}
 }
 
+int test03CodificoUnArchivoBinario() {
+	FILE* inputFile = fopen("pruebaBinario.bin", "r+");
+	FILE* outputFile = fopen("textoBinarioCodificado.bin","r+");
+
+	int resultado = encodeFileToBase64(inputFile,outputFile);
+	char* inputFileEnconding = "YmluYXJpbwo=";
+
+	if (resultado == SUCCESS) {
+		char outputFileContent [MAX_LONGITUD];
+		memset(outputFileContent,0,MAX_LONGITUD);
+		fseek(outputFile, 0, SEEK_SET);
+		fread(outputFileContent,sizeof(char),MAX_LONGITUD,outputFile);
+
+		
+		if (strcmp(inputFileEnconding,outputFileContent) == 0) {
+			printf("Codifico un archivo binario: OK\n");
+			fclose(inputFile);
+			fclose(outputFile);
+			return SUCCESS;	
+		} else {
+			printf("Codifico un archivo binario : ERROR\n");
+			fclose(inputFile);
+			fclose(outputFile);
+			return EXIT_FAILURE;
+		}
+		
+
+	} else {
+		printf("Codifico un archivo binario : ERROR\n");
+		fclose(inputFile);
+		fclose(outputFile);
+		return EXIT_FAILURE;
+	}
+}
+
 
 //Pruebas de la funcion decodeFileToBase64
 
 int test00DecodificoUsandoDosArchivosValidos() {
-	FILE* inputFile = fopen("/home/franco/Escritorio/OrgaDelComputador/tp0-OrgaDelComputador/textoCodificado.txt","r+");
-	FILE* outputFile = fopen("/home/franco/Escritorio/OrgaDelComputador/tp0-OrgaDelComputador/entrada.txt", "r+");
+	FILE* inputFile = fopen("textoCodificado.txt","r+");
+	FILE* outputFile = fopen("entrada.txt", "r+");
 
 	int resultado = decodeFileFromBase64(inputFile,outputFile);
-	char* inputFileDecoding = "En un lugar de La Mancha de cuyo nombre no quiero acordarme hola como estas ste\niijerirg el fin del mundo\n";
+	char* inputFileDecoding = "En un lugar de La Mancha de cuyo nombre no quiero acordarme hola como estas ste\niijerirg el fin del mundo\n\n";
 
 	if (resultado == SUCCESS) {
 		char outputFileContent [MAX_LONGITUD];
@@ -219,8 +239,8 @@ int test00DecodificoUsandoDosArchivosValidos() {
 }
 
 int test01DecodificoUsandoArchivoDeInputInexistente() {
-	FILE* inputFile = fopen("/home/franco/Escritorio/OrgaDelComputador/tp0-OrgaDelComputador/noExiste.txt","r+");
-	FILE* outputFile = fopen("/home/franco/Escritorio/OrgaDelComputador/tp0-OrgaDelComputador/entrada.txt", "r+");
+	FILE* inputFile = fopen("noExiste.txt","r+");
+	FILE* outputFile = fopen("entrada.txt", "r+");
 
 	int resultado = decodeFileFromBase64(inputFile,outputFile);
 
@@ -237,8 +257,8 @@ int test01DecodificoUsandoArchivoDeInputInexistente() {
 }
 
 int test02DecodificoUsandoArchivoDeOutputInexistente() {
-	FILE* inputFile = fopen("/home/franco/Escritorio/OrgaDelComputador/tp0-OrgaDelComputador/textoCodificado.txt","r+");
-	FILE* outputFile = fopen("/home/franco/Escritorio/OrgaDelComputador/tp0-OrgaDelComputador/noExiste.txt", "r+");
+	FILE* inputFile = fopen("textoCodificado.txt","r+");
+	FILE* outputFile = fopen("noExiste.txt", "r+");
 
 	int resultado = decodeFileFromBase64(inputFile,outputFile);
 
@@ -253,6 +273,42 @@ int test02DecodificoUsandoArchivoDeOutputInexistente() {
 		return EXIT_FAILURE;
 	}
 }
+
+int test03DecodificoUnArchivoBinario() {
+	FILE* inputFile = fopen("textoBinarioCodificado.bin","r+");
+	FILE* outputFile = fopen("pruebaBinario.bin", "r+");
+
+	int resultado = decodeFileFromBase64(inputFile,outputFile);
+	char* inputFileDecoding = "binario\n";
+
+	if (resultado == SUCCESS) {
+		char outputFileContent [MAX_LONGITUD];
+		memset(outputFileContent,0,MAX_LONGITUD);
+		fseek(outputFile, 0, SEEK_SET);
+		fread(outputFileContent,sizeof(char),MAX_LONGITUD,outputFile);
+
+		
+		if (strcmp(inputFileDecoding,outputFileContent) == 0) {
+			printf("Decodifico un archivo binario: OK\n");
+			fclose(inputFile);
+			fclose(outputFile);
+			return SUCCESS;	
+		} else {
+			printf("Decodifico un archivo binario : ERROR\n");
+			fclose(inputFile);
+			fclose(outputFile);
+			return EXIT_FAILURE;
+		}
+		
+
+	} else {
+		printf("Codifico un archivo binario : ERROR\n");
+		fclose(inputFile);
+		fclose(outputFile);
+		return EXIT_FAILURE;
+	}
+}
+
 
 //Pruebas de uso
 
@@ -272,6 +328,8 @@ int test00PasoABase64UnaFraseYLuegoLaDecodifico() {
 	}
 }
 
+
+
 int tests() {
 	int resultado = 0;
 	printf("---Incio pruebas de la funcion encodeBase64---\n\n");
@@ -288,11 +346,13 @@ int tests() {
 	resultado += test00CodificoUsandoDosArchivosValidos();
 	resultado += test01CodificoUsandoArchivoDeInputInexistente();
 	resultado += test02CodificoUsandoArchivoDeOutputInexistente();
+	resultado += test03CodificoUnArchivoBinario();
 
 	printf("\n---Incio pruebas de la funcion decodeFileToBase64---\n\n");
 	resultado += test00DecodificoUsandoDosArchivosValidos();
 	resultado += test01DecodificoUsandoArchivoDeInputInexistente();
 	resultado += test02DecodificoUsandoArchivoDeOutputInexistente();
+	resultado += test03DecodificoUnArchivoBinario();
 
 	printf("\n---Incio pruebas de uso---\n\n");
 	resultado += test00PasoABase64UnaFraseYLuegoLaDecodifico();

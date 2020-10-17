@@ -19,10 +19,10 @@ all: $(TARGET) $(TARGET2)
 
 
 $(TARGET): $(OBJS)
-	$(CC) -o $(TARGET) $(OBJS) $(LDFLAGS)
+	$(CC) $(CC_FLAGS) -o $(TARGET) $(OBJS) $(LDFLAGS)
 
 $(TARGET2): $(OBJS2)
-	$(CC) -o $(TARGET2) $(OBJS2) $(LDFLAGS)
+	$(CC) $(CC_FLAGS) -o $(TARGET2) $(OBJS2) $(LDFLAGS)
 
 clean:
 	$(RM) *.o $(TARGET) $(TARGET2) $(TARGET).zip
