@@ -15,6 +15,9 @@
 #define D_OPTION 'd'
 
 #define MAX_LONGITUD 256
+//la longitud del buffer debe conincidir para q el 
+//encode no agregue = al final
+#define LEN_BUFFER 40
 
 #define HELP_MESSAGE "Options:\n-V, --version\tPrint version and quit.\n-h, --help\t\
 Print this information.\n-o, --output\tPath to output file.\n-i, \
@@ -50,14 +53,15 @@ int modifyFileBase(const char* inputFileName,
   if (outputFileName) {
     outputFile = fopen(outputFileName,"w");
   }
-  
-  ssize_t nread = 0;
-  size_t len = 0;
-  size_t lenDataEncode = 0;
 
-  while ((nread = getline(&line, &len, inputFile)) != -1) {
-    output = f(line, nread,&lenDataEncode);
-    __write(outputFile,output,lenDataEncode);
+  char buffer[LEN_BUFFER];
+  memset(buffer,0,LEN_BUFFER);
+  size_t len = 0;
+  size_t nread = 0;
+  while ((nread = fread(buffer,sizeof(char),LEN_BUFFER,inputFile)) > 0) {
+    output = f(buffer, nread,&len);
+    __write(outputFile,output,len);
+    memset(buffer,0,LEN_BUFFER);
     if(output) free(output);
   }
   
