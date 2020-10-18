@@ -9,6 +9,7 @@ HEADERS = $(wildcard *.h)
 #OBJS = $(patsubst %.c,%.o,$(FUENTES))
 OBJS = tp0.c utils.c utils.h
 OBJS2 = test_utils.c utils.c utils.h
+FILES = entrada.txt textoCodificado.txt pruebaBinario.bin textoBinarioCodificado.bin tp0_informe.pdf
 CC_FLAGS = -g -std=c99 -Wall -Werror -pedantic
 
 all: $(TARGET) $(TARGET2)
@@ -28,6 +29,6 @@ clean:
 	$(RM) *.o $(TARGET) $(TARGET2) $(TARGET).zip
 
 entrega:
-	zip $(TARGET).zip $(FUENTES) $(HEADERS) $(NAME)
+	zip $(TARGET).zip $(FUENTES) $(HEADERS) $(NAME) $(FILES)
 
 .PHONY: all clean
